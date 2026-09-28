@@ -7,7 +7,7 @@ import { useApp } from "@/components/AppProvider";
 import { RoleGate } from "@/components/AppShell";
 import { BarChart } from "@/components/BarChart";
 import { Avatar, PageTitle, Skeleton, StatCard, StatusBadge, useLoader } from "@/components/ui";
-import { api, fmtDateTime } from "@/lib/client";
+import { api, downloadCsv, fmtDateTime } from "@/lib/client";
 import { inr } from "@/lib/shared";
 
 type Stats = {
@@ -23,19 +23,21 @@ function Overview() {
   if (!s) return <Skeleton className="h-96" />;
   return (
     <div>
-      <PageTitle kicker="Admin console" title="Platform overview" />
+      <PageTitle kicker="Admin console" title="Platform overview">
+        <Link href="/admin/settings" className="rounded-2xl bg-white px-3.5 py-2 text-sm font-bold ring-1 ring-line lg:hidden">Settings</Link>
+      </PageTitle>
       {(s.pending > 0 || s.disputes > 0) && (
         <div className="mb-5 flex flex-wrap gap-3">
           {s.pending > 0 && (
             <Link href="/admin/verify">
-              <motion.div whileHover={{ y: -2 }} className="flex items-center gap-2 rounded-2xl bg-butter px-4 py-3 text-sm font-extrabold">
+              <motion.div whileHover={{ y: -2 }} className="flex items-center gap-2 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-extrabold text-warn">
                 <ShieldCheck className="h-4 w-4" /> {s.pending} listing{s.pending > 1 ? "s" : ""} waiting for verification →
               </motion.div>
             </Link>
           )}
           {s.disputes > 0 && (
             <Link href="/admin/disputes">
-              <motion.div whileHover={{ y: -2 }} className="flex items-center gap-2 rounded-2xl bg-rose px-4 py-3 text-sm font-extrabold text-coral-deep">
+              <motion.div whileHover={{ y: -2 }} className="flex items-center gap-2 rounded-2xl bg-bad-soft px-4 py-3 text-sm font-extrabold text-bad">
                 <Scale className="h-4 w-4" /> {s.disputes} open dispute{s.disputes > 1 ? "s" : ""} →
               </motion.div>
             </Link>
@@ -55,11 +57,11 @@ function Overview() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-[2rem] bg-white p-5 shadow-soft">
           <div className="font-extrabold">Completed booking value, last 7 days</div>
-          <BarChart data={s.days} x="day" y="gmv" label="Booking value" color="#3A86D1" />
+          <BarChart data={s.days} x="day" y="gmv" label="Booking value" color="#4263D6" />
         </div>
         <div className="rounded-[2rem] bg-white p-5 shadow-soft">
           <div className="font-extrabold">Bookings started, last 7 days</div>
-          <BarChart data={s.days} x="day" y="bookings" label="Bookings" color="#6F5FD6" money={false} />
+          <BarChart data={s.days} x="day" y="bookings" label="Bookings" color="#8FA3E8" money={false} />
         </div>
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.6fr]">
@@ -84,7 +86,7 @@ function Overview() {
         <div className="rounded-[2rem] bg-white p-5 shadow-soft">
           <div className="mb-3 flex items-center justify-between font-extrabold">
             Latest bookings
-            <a href="/api/admin/export?type=bookings" className="text-xs font-bold text-coral">Export CSV ↓</a>
+            <button onClick={() => downloadCsv("bookings")} className="text-xs font-bold text-brand">Export CSV ↓</button>
           </div>
           <div className="divide-y divide-road">
             {s.recent.map((b) => (

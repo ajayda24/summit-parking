@@ -62,13 +62,13 @@ export function PaySheet<T>({
       <AnimatePresence mode="wait">
         {stage === "review" && (
           <motion.div key="review" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-lavender via-sky to-mint p-5">
-              <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/30" />
-              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-ink/60">
+            <div className="relative overflow-hidden rounded-3xl bg-brand p-5 text-white">
+              <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/10" />
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-white/70">
                 <Wallet className="h-4 w-4" /> Summit wallet
               </div>
               <div className="mt-2 text-3xl font-black">{inr(balance)}</div>
-              <div className="mt-1 text-xs font-bold text-ink/60">{me?.user.name} · demo money</div>
+              <div className="mt-1 text-xs font-bold text-white/70">{me?.user.name} · demo money</div>
             </div>
             <div className="mt-4 space-y-2 rounded-3xl bg-white p-4">
               {lines.map((l) => (
@@ -83,7 +83,7 @@ export function PaySheet<T>({
               </div>
             </div>
             {short > 0 && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-3xl bg-butter p-4">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-3xl bg-warn-soft p-4">
                 <div className="text-sm font-extrabold">You're {inr(short)} short. Add money and pay in one go.</div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {[short, Math.ceil(short / 100) * 100 + 100, 500, 1000].filter((v, i, a) => v >= short && a.indexOf(v) === i).map((v) => (
@@ -115,8 +115,8 @@ export function PaySheet<T>({
         )}
         {stage === "processing" && (
           <motion.div key="proc" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="py-8 text-center">
-            <motion.div animate={{ rotateY: [0, 180, 360] }} transition={{ repeat: Infinity, duration: 1.4 }} className="mx-auto h-24 w-40 rounded-2xl bg-gradient-to-br from-coral to-lavender-deep p-3 text-left text-white shadow-pop">
-              <div className="h-5 w-7 rounded bg-butter" />
+            <motion.div animate={{ rotateY: [0, 180, 360] }} transition={{ repeat: Infinity, duration: 1.4 }} className="mx-auto h-24 w-40 rounded-2xl bg-brand p-3 text-left text-white shadow-pop">
+              <div className="h-5 w-7 rounded bg-white/40" />
               <div className="mt-6 text-xs font-bold tracking-widest">•••• 4242</div>
             </motion.div>
             <div className="mt-6 font-extrabold">Processing payment…</div>

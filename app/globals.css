@@ -1,28 +1,48 @@
 @import "tailwindcss";
 
+/*
+ * Restrained light palette: warm off-white + white surfaces, ONE accent (calm parking-sign blue),
+ * and soft status tints used only when they carry meaning (success / warning / danger).
+ * Legacy pastel names are aliased onto these so every screen draws from the same few colours.
+ */
 @theme {
-  --color-cream: #fff9f2;
+  --color-cream: #f7f7f4; /* page background */
   --color-paper: #ffffff;
-  --color-road: #e6e8ef;
-  --color-road-dark: #c9ccd8;
-  --color-mint: #bdebd6;
-  --color-mint-deep: #3fae83;
-  --color-peach: #ffd6bf;
-  --color-peach-deep: #e0864f;
-  --color-lavender: #d9d2ff;
-  --color-lavender-deep: #6f5fd6;
-  --color-sky: #cde7ff;
-  --color-sky-deep: #3a86d1;
-  --color-butter: #fff1b8;
-  --color-butter-deep: #c99a12;
-  --color-rose: #ffc9de;
-  --color-coral: #ff7a6b;
-  --color-coral-deep: #e8574a;
-  --color-ink: #2b2d42;
-  --color-muted: #6b6f86;
+  --color-line: #ebebe6;
+  --color-road: #eeeee9;
+  --color-road-dark: #d9d9d2;
+  --color-ink: #1f2330;
+  --color-muted: #6c707e;
+
+  --color-brand: #4263d6; /* the one accent */
+  --color-brand-deep: #3450b8;
+  --color-brand-soft: #eef2fd;
+
+  --color-ok: #2f8a5f;
+  --color-ok-soft: #e8f5ee;
+  --color-warn: #946c00;
+  --color-warn-soft: #fcf4dc;
+  --color-bad: #c4473b;
+  --color-bad-soft: #fcecea;
+
+  /* aliases */
+  --color-sky: var(--color-brand-soft);
+  --color-sky-deep: var(--color-brand);
+  --color-lavender: var(--color-brand-soft);
+  --color-lavender-deep: var(--color-brand);
+  --color-coral: var(--color-brand);
+  --color-coral-deep: var(--color-bad);
+  --color-mint: var(--color-ok-soft);
+  --color-mint-deep: var(--color-ok);
+  --color-butter: var(--color-warn-soft);
+  --color-butter-deep: var(--color-warn);
+  --color-peach: #f2f2ee;
+  --color-peach-deep: var(--color-warn);
+  --color-rose: var(--color-bad-soft);
+
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --shadow-soft: 0 10px 30px -12px rgb(43 45 66 / 0.18);
-  --shadow-pop: 0 18px 40px -14px rgb(43 45 66 / 0.28);
+  --shadow-soft: 0 1px 2px rgb(31 35 48 / 0.04), 0 8px 24px -12px rgb(31 35 48 / 0.12);
+  --shadow-pop: 0 18px 40px -16px rgb(31 35 48 / 0.25);
 }
 
 html,
@@ -34,12 +54,9 @@ body {
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  background-image:
-    radial-gradient(circle at 12% 8%, rgb(205 231 255 / 0.55), transparent 32%),
-    radial-gradient(circle at 88% 14%, rgb(217 210 255 / 0.45), transparent 30%),
-    radial-gradient(circle at 70% 92%, rgb(189 235 214 / 0.4), transparent 34%);
-  background-attachment: fixed;
-  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
 
 /* animated lane dashes */
@@ -77,10 +94,10 @@ body {
 }
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgb(255 122 107 / 0.5);
+    box-shadow: 0 0 0 0 rgb(196 71 59 / 0.35);
   }
   100% {
-    box-shadow: 0 0 0 14px rgb(255 122 107 / 0);
+    box-shadow: 0 0 0 14px rgb(196 71 59 / 0);
   }
 }
 .pulse-ring {
@@ -139,4 +156,35 @@ textarea {
 ::-webkit-scrollbar-thumb {
   background: #d9d6e8;
   border-radius: 99px;
+}
+
+/* iOS zooms into inputs under 16px — keep them at 16px on phones */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Let grid/flex children shrink on narrow phones instead of overflowing the page */
+@layer base {
+  .grid > *,
+  main {
+    min-width: 0;
+  }
+  html,
+  body {
+    overflow-x: clip;
+  }
 }

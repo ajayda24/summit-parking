@@ -13,10 +13,10 @@ type BtnProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({ variant = "primary", loading, size = "md", className = "", children, disabled, ...rest }: BtnProps) {
   const v = {
-    primary: "bg-coral text-white hover:bg-coral-deep shadow-[0_8px_20px_-8px_rgb(255_122_107/0.8)]",
-    soft: "bg-white text-ink hover:bg-road/60 ring-1 ring-road-dark/60",
+    primary: "bg-brand text-white hover:bg-brand-deep shadow-[0_8px_18px_-10px_rgb(66_99_214/0.9)]",
+    soft: "bg-white text-ink hover:bg-road/60 ring-1 ring-line",
     ghost: "text-ink hover:bg-white/70",
-    danger: "bg-rose text-coral-deep hover:bg-[#ffb3cf]",
+    danger: "bg-bad-soft text-bad hover:bg-[#f8dcd8]",
     dark: "bg-ink text-white hover:bg-[#1c1d2e]",
   }[variant];
   const s = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2.5 text-sm", lg: "px-6 py-3.5 text-base" }[size];
@@ -24,7 +24,7 @@ export function Button({ variant = "primary", loading, size = "md", className = 
     <motion.button
       whileTap={{ scale: 0.96 }}
       whileHover={{ y: -1 }}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${v} ${s} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${v} ${s} ${className}`}
       disabled={disabled || loading}
       {...(rest as any)}
     >
@@ -44,14 +44,14 @@ export function Card({ className = "", children, ...rest }: React.HTMLAttributes
 
 export function Badge({ color = "road", children, className = "" }: { color?: string; children: React.ReactNode; className?: string }) {
   const c: Record<string, string> = {
-    road: "bg-road text-ink",
-    mint: "bg-mint text-[#1f6b4f]",
-    peach: "bg-peach text-[#8a4a22]",
-    lavender: "bg-lavender text-lavender-deep",
-    sky: "bg-sky text-[#1e5a94]",
-    butter: "bg-butter text-[#7a5d05]",
-    rose: "bg-rose text-coral-deep",
-    coral: "bg-coral text-white",
+    road: "bg-road text-ink/70",
+    mint: "bg-ok-soft text-ok",
+    peach: "bg-road text-ink/70",
+    lavender: "bg-brand-soft text-brand",
+    sky: "bg-brand-soft text-brand",
+    butter: "bg-warn-soft text-warn",
+    rose: "bg-bad-soft text-bad",
+    coral: "bg-bad-soft text-bad",
     ink: "bg-ink text-white",
   };
   return <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${c[color] ?? c.road} ${className}`}>{children}</span>;
@@ -96,8 +96,9 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 60, opacity: 0 }}
             transition={{ type: "spring", damping: 26, stiffness: 300 }}
-            className={`max-h-[92vh] w-full overflow-y-auto rounded-t-[2rem] bg-cream p-6 shadow-pop sm:rounded-[2rem] ${wide ? "sm:max-w-3xl" : "sm:max-w-md"}`}
+            className={`max-h-[92dvh] w-full overflow-y-auto rounded-t-[1.75rem] bg-cream p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-pop sm:rounded-[2rem] sm:p-6 ${wide ? "sm:max-w-3xl" : "sm:max-w-md"}`}
           >
+            <div className="mx-auto -mt-1 mb-3 h-1.5 w-10 rounded-full bg-road-dark sm:hidden" />
             <div className="mb-4 flex items-start justify-between gap-4">
               <div className="text-lg font-extrabold">{title}</div>
               <button onClick={onClose} className="rounded-full bg-white p-1.5 hover:bg-road" aria-label="Close">
@@ -124,18 +125,17 @@ export function CountUp({ value, money = true, className = "" }: { value: number
 }
 
 export function StatCard({ label, value, money, icon, color = "sky", hint }: { label: string; value: number; money?: boolean; icon?: React.ReactNode; color?: string; hint?: string }) {
-  const bg: Record<string, string> = { sky: "bg-sky", mint: "bg-mint", peach: "bg-peach", lavender: "bg-lavender", butter: "bg-butter", rose: "bg-rose" };
+  const chip: Record<string, string> = { mint: "bg-ok-soft text-ok", rose: "bg-bad-soft text-bad", butter: "bg-warn-soft text-warn" };
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={`relative overflow-hidden rounded-3xl ${bg[color]} p-4`}>
-      <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/30" />
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-ink/60">
-        {icon}
-        {label}
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-line/60">
+      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-muted">
+        <span className={`grid h-7 w-7 place-items-center rounded-xl ${chip[color] ?? "bg-brand-soft text-brand"}`}>{icon}</span>
+        <span className="leading-tight">{label}</span>
       </div>
       <div className="mt-2 text-2xl font-extrabold">
         <CountUp value={value} money={!!money} />
       </div>
-      {hint && <div className="mt-1 text-xs font-medium text-ink/60">{hint}</div>}
+      {hint && <div className="mt-0.5 text-xs font-medium text-muted">{hint}</div>}
     </motion.div>
   );
 }
@@ -145,7 +145,7 @@ export function Stars({ value, onChange, size = 16 }: { value: number; onChange?
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
         <motion.button key={n} type="button" whileTap={{ scale: 1.4 }} disabled={!onChange} onClick={() => onChange?.(n)} className={onChange ? "cursor-pointer" : "cursor-default"}>
-          <Star style={{ width: size, height: size }} className={n <= Math.round(value) ? "fill-butter-deep text-butter-deep" : "text-road-dark"} />
+          <Star style={{ width: size, height: size }} className={n <= Math.round(value) ? "fill-[#E8B530] text-[#E8B530]" : "text-road-dark"} />
         </motion.button>
       ))}
     </div>
@@ -155,7 +155,7 @@ export function Stars({ value, onChange, size = 16 }: { value: number; onChange?
 export function Avatar({ name, color, size = 36 }: { name: string; color: string; size?: number }) {
   const initials = name.split(" ").map((p) => p[0]).slice(0, 2).join("");
   return (
-    <div className="grid shrink-0 place-items-center rounded-full font-extrabold text-ink ring-2 ring-white" style={{ background: color, width: size, height: size, fontSize: size * 0.36 }}>
+    <div className="grid shrink-0 place-items-center rounded-full bg-brand-soft font-extrabold text-brand ring-2 ring-white" data-color={color} style={{ width: size, height: size, fontSize: size * 0.36 }}>
       {initials}
     </div>
   );
@@ -171,12 +171,12 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
   );
 }
 
-export const inputCls = "w-full rounded-2xl border-2 border-transparent bg-white px-4 py-2.5 text-sm font-medium ring-1 ring-road-dark/60 transition focus:border-lavender-deep/50 focus:ring-0";
+export const inputCls = "w-full rounded-2xl border-2 border-transparent bg-white px-4 py-2.5 text-sm font-medium ring-1 ring-line transition focus:border-brand/40 focus:ring-0";
 
 export function Chip({ active, onClick, children, color = "lavender" }: { active?: boolean; onClick?: () => void; children: React.ReactNode; color?: string }) {
-  const on: Record<string, string> = { lavender: "bg-lavender-deep text-white", coral: "bg-coral text-white", mint: "bg-mint-deep text-white", sky: "bg-sky-deep text-white" };
+  const on: Record<string, string> = { lavender: "bg-ink text-white", coral: "bg-ink text-white", mint: "bg-ink text-white", sky: "bg-ink text-white" };
   return (
-    <motion.button type="button" whileTap={{ scale: 0.92 }} layout onClick={onClick} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-bold transition-colors ${active ? on[color] : "bg-white text-ink ring-1 ring-road-dark/60 hover:bg-road/50"}`}>
+    <motion.button type="button" whileTap={{ scale: 0.92 }} layout onClick={onClick} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-bold transition-colors ${active ? on[color] : "bg-white text-ink ring-1 ring-line hover:bg-road/50"}`}>
       {children}
     </motion.button>
   );
@@ -184,9 +184,9 @@ export function Chip({ active, onClick, children, color = "lavender" }: { active
 
 export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: T; label: React.ReactNode }[]; value: T; onChange: (t: T) => void }) {
   return (
-    <div className="inline-flex rounded-2xl bg-white p-1 ring-1 ring-road-dark/50">
+    <div className="no-scrollbar inline-flex max-w-full overflow-x-auto rounded-2xl bg-white p-1 ring-1 ring-line">
       {tabs.map((t) => (
-        <button key={t.id} onClick={() => onChange(t.id)} className="relative rounded-xl px-4 py-2 text-sm font-bold">
+        <button key={t.id} onClick={() => onChange(t.id)} className="relative shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-bold">
           {value === t.id && <motion.div layoutId={`tab-${tabs.map((x) => x.id).join()}`} className="absolute inset-0 rounded-xl bg-ink" transition={{ type: "spring", damping: 25, stiffness: 350 }} />}
           <span className={`relative ${value === t.id ? "text-white" : "text-ink/70"}`}>{t.label}</span>
         </button>
@@ -197,10 +197,10 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
 
 export function PageTitle({ kicker, title, children }: { kicker?: string; title: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-3 sm:mb-6">
       <div>
-        {kicker && <div className="text-xs font-extrabold uppercase tracking-[0.18em] text-coral">{kicker}</div>}
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>
+        {kicker && <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brand">{kicker}</div>}
+        <h1 className="mt-1 text-[26px] font-extrabold leading-tight tracking-tight sm:text-4xl">{title}</h1>
       </div>
       {children}
     </div>

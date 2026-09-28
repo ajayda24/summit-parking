@@ -1,21 +1,53 @@
 "use client";
 
+import { ApiError, handle } from "./api";
+import { initDb, persist } from "./db";
+
 export class HttpError extends Error {
   constructor(public status: number, message: string) {
     super(message);
   }
 }
 
+const UID_KEY = "summit-uid";
+
+function currentUid() {
+  try {
+    return Number(localStorage.getItem(UID_KEY)) || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Calls the marketplace engine. It runs on-device (SQLite in the browser), so this is a
+ * function call rather than a network request, but it keeps the same shape as an HTTP API.
+ */
 export async function api<T = any>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`/api/${path}`, {
-    method: body === undefined ? "GET" : "POST",
-    headers: body === undefined ? undefined : { "content-type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: "no-store",
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new HttpError(res.status, data.error || "Request failed");
-  return data as T;
+  await initDb();
+  const [route, qs] = path.split("?");
+  try {
+    const { result, newUid } = handle(body === undefined ? "GET" : "POST", route, currentUid(), body ?? null, new URLSearchParams(qs ?? ""));
+    if (newUid) localStorage.setItem(UID_KEY, String(newUid));
+    await persist();
+    return structuredClone(result) as T;
+  } catch (e) {
+    await persist();
+    if (e instanceof ApiError) throw new HttpError(e.status, e.message);
+    console.error(e);
+    throw new HttpError(500, "Something went wrong");
+  }
+}
+
+/** Downloads a CSV export (admin). */
+export async function downloadCsv(type: "bookings" | "transactions") {
+  const r = await api<{ __csv: string; filename: string }>(`admin/export?type=${type}`);
+  const url = URL.createObjectURL(new Blob([r.__csv], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = r.filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export const fmtTime = (ms: number) => new Date(ms).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });

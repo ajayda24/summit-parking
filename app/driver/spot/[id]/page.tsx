@@ -35,9 +35,10 @@ function Booker({ spot }: { spot: Detail }) {
     return Array.from({ length: 7 }, (_, i) => new Date(base.getTime() + i * 24 * HOUR));
   }, [Math.floor(now / (24 * HOUR))]); // eslint-disable-line react-hooks/exhaustive-deps
   const [day, setDay] = useState(0);
+  // Default to the next quarter hour so a demo booking can be checked into right away.
   const nextSlot = () => {
-    const t = new Date(now + 30 * MIN);
-    return t.getHours() + (t.getMinutes() >= 30 ? 1 : 0.5);
+    const t = new Date(now);
+    return t.getHours() + Math.ceil((t.getMinutes() + 1) / 15) * 0.25;
   };
   const [startH, setStartH] = useState<number>(() => Math.min(nextSlot(), 22));
   const [hours, setHours] = useState(2);
@@ -81,12 +82,12 @@ function Booker({ spot }: { spot: Detail }) {
   }, [clash?.start_at]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const slots = [];
-  for (let h = 0; h < 24; h += 0.5) slots.push(h);
-  const label = (h: number) => `${Math.floor(h) % 12 || 12}:${h % 1 ? "30" : "00"} ${h < 12 ? "am" : "pm"}`;
+  for (let h = 0; h < 24; h += 0.25) slots.push(h);
+  const label = (h: number) => `${Math.floor(h) % 12 || 12}:${String(Math.round((h % 1) * 60)).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`;
   const dayBusy = spot.busy.filter((b) => b.end_at > dayStart && b.start_at < dayStart + 24 * HOUR);
 
   return (
-    <div className={`rounded-[2rem] bg-white p-5 shadow-soft ${shake ? "shake" : ""}`}>
+    <div className={`rounded-[1.75rem] bg-white p-5 shadow-soft ${shake ? "shake" : ""}`}>
       <div className="flex items-end justify-between">
         <div>
           <div className="text-3xl font-black">
@@ -139,7 +140,7 @@ function Booker({ spot }: { spot: Detail }) {
         <div className="relative h-7 overflow-hidden rounded-full bg-road">
           <div className="absolute inset-y-0 bg-mint/70" style={{ left: `${(spot.open_from / 24) * 100}%`, width: `${((spot.open_to - spot.open_from) / 24) * 100}%` }} />
           {dayBusy.map((b, i) => (
-            <div key={i} className="absolute inset-y-0 bg-[repeating-linear-gradient(45deg,#c9ccd8_0_6px,#e6e8ef_6px_12px)]" style={{ left: `${Math.max(0, (b.start_at - dayStart) / (24 * HOUR)) * 100}%`, width: `${((Math.min(b.end_at, dayStart + 24 * HOUR) - Math.max(b.start_at, dayStart)) / (24 * HOUR)) * 100}%` }} />
+            <div key={i} className="absolute inset-y-0 bg-[repeating-linear-gradient(45deg,#d9d9d2_0_6px,#eeeee9_6px_12px)]" style={{ left: `${Math.max(0, (b.start_at - dayStart) / (24 * HOUR)) * 100}%`, width: `${((Math.min(b.end_at, dayStart + 24 * HOUR) - Math.max(b.start_at, dayStart)) / (24 * HOUR)) * 100}%` }} />
           ))}
           <motion.div layout className={`absolute inset-y-1 rounded-full ${problem ? "bg-coral" : "bg-ink"}`} style={{ left: `${(startH / 24) * 100}%`, width: `${Math.min((hours / 24) * 100, 100 - (startH / 24) * 100)}%` }} />
         </div>
@@ -204,19 +205,19 @@ function SpotDetail() {
   const narrow = vehicle && narrowWarning(vehicle.type as VehicleType, s.road_width as never);
   return (
     <div>
-      <Link href="/driver" className="mb-4 inline-flex items-center gap-1 text-sm font-bold text-ink/60 hover:text-ink">
+      <Link href="/driver" className="mb-3 inline-flex items-center gap-1 text-sm font-bold text-ink/60 hover:text-ink">
         <ArrowLeft className="h-4 w-4" /> Back to search
       </Link>
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="space-y-5">
-          <motion.div layoutId={`spot-${s.id}`} className="relative h-72 overflow-hidden rounded-[2rem] shadow-soft sm:h-96">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[1.4fr_1fr] lg:gap-6">
+        <div className="contents lg:block lg:space-y-5">
+          <motion.div layoutId={`spot-${s.id}`} className="relative order-1 h-60 overflow-hidden rounded-[1.75rem] shadow-soft sm:h-96">
             <SpotImage spot={s} className="h-full w-full" />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent p-6 text-white">
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent p-5 text-white sm:p-6">
               <div className="flex flex-wrap gap-2">
                 <Badge color="mint"><ShieldCheck className="h-3 w-3" /> Verified owner</Badge>
                 <Badge color="butter" className="capitalize">{s.spot_type}</Badge>
               </div>
-              <h1 className="mt-2 text-3xl font-black sm:text-4xl">{s.title}</h1>
+              <h1 className="mt-2 text-2xl font-black sm:text-4xl">{s.title}</h1>
               <div className="mt-1 flex items-center gap-1 text-sm font-semibold opacity-90"><MapPin className="h-4 w-4" /> {s.address} · {s.distance} km away</div>
             </div>
             <motion.button
@@ -232,27 +233,27 @@ function SpotDetail() {
             </motion.button>
           </motion.div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="order-2 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
             {[
-              { icon: Ruler, label: "Size", value: `${s.size} · ${{ S: "2-wheeler", M: "Hatch/Sedan", L: "SUV", XL: "Van" }[s.size]}`, c: "bg-sky" },
-              { icon: Navigation, label: "Road", value: `${s.road_width} lane`, c: narrow ? "bg-peach" : "bg-mint" },
-              { icon: Umbrella, label: "Cover", value: s.covered ? "Covered" : "Open air", c: "bg-lavender" },
-              { icon: Clock, label: "Hours", value: s.open_from === 0 && s.open_to === 24 ? "24 × 7" : `${s.open_from}:00–${s.open_to}:00`, c: "bg-butter" },
+              { icon: Ruler, label: "Size", value: `${s.size} · ${{ S: "2-wheeler", M: "Hatch/Sedan", L: "SUV", XL: "Van" }[s.size]}`, c: "" },
+              { icon: Navigation, label: "Road", value: `${s.road_width} lane`, c: narrow ? "!bg-warn-soft" : "" },
+              { icon: Umbrella, label: "Cover", value: s.covered ? "Covered" : "Open air", c: "" },
+              { icon: Clock, label: "Hours", value: s.open_from === 0 && s.open_to === 24 ? "24 × 7" : `${s.open_from}:00–${s.open_to}:00`, c: "" },
             ].map((x, i) => (
-              <motion.div key={x.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={`rounded-3xl ${x.c} p-4`}>
-                <x.icon className="h-5 w-5" />
+              <motion.div key={x.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={`rounded-3xl bg-white p-3.5 shadow-soft sm:p-4 ${x.c}`}>
+                <x.icon className="h-5 w-5 text-brand" />
                 <div className="mt-2 text-[10px] font-extrabold uppercase tracking-widest text-ink/50">{x.label}</div>
                 <div className="text-sm font-extrabold capitalize">{x.value}</div>
               </motion.div>
             ))}
           </div>
           {narrow && (
-            <div className="flex items-center gap-2 rounded-2xl bg-peach px-4 py-3 text-sm font-bold">
+            <div className="order-2 flex items-center gap-2 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-bold text-warn">
               <AlertTriangle className="h-4 w-4" /> Heads up: the access lane is narrow. Fine for smaller cars, tricky for your {vehicle!.type}.
             </div>
           )}
 
-          <div className="rounded-[2rem] bg-white p-6 shadow-soft">
+          <div className="order-4 rounded-[1.75rem] bg-white p-5 shadow-soft sm:p-6">
             <p className="text-sm leading-relaxed text-ink/80">{s.description}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {s.amenities.map((a) => (
@@ -273,11 +274,11 @@ function SpotDetail() {
             </div>
           </div>
 
-          <div className="h-56 overflow-hidden rounded-[2rem] shadow-soft ring-4 ring-white">
+          <div className="order-5 h-52 overflow-hidden rounded-[1.75rem] shadow-soft ring-4 ring-white">
             <Map pins={[{ id: s.id, lat: s.lat, lng: s.lng, label: inr(s.price) }]} activeId={s.id} center={[s.lat, s.lng]} zoom={15} />
           </div>
 
-          <div className="rounded-[2rem] bg-white p-6 shadow-soft">
+          <div className="order-6 rounded-[1.75rem] bg-white p-5 shadow-soft sm:p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-extrabold">Reviews</h3>
               <div className="flex items-center gap-2 text-sm font-bold"><Stars value={s.rating} /> {s.rating || "—"} · {s.reviews.length}</div>
@@ -296,7 +297,7 @@ function SpotDetail() {
             </div>
           </div>
         </div>
-        <div className="lg:sticky lg:top-28 lg:self-start">
+        <div id="book" className="order-3 lg:sticky lg:top-24 lg:self-start">
           <Booker spot={s} />
         </div>
       </div>

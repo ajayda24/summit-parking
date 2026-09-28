@@ -4,13 +4,13 @@ import { Bar, BarChart as RBarChart, CartesianGrid, ResponsiveContainer, Tooltip
 import { inr } from "@/lib/shared";
 
 /** Single-series bar chart: one hue, thin rounded bars, recessive grid, hover tooltip. */
-export function BarChart<T extends Record<string, unknown>>({ data, x, y, color = "#6F5FD6", money = true, label }: { data: T[]; x: keyof T; y: keyof T; color?: string; money?: boolean; label: string }) {
+export function BarChart<T extends Record<string, unknown>>({ data, x, y, color = "#4263D6", money = true, label }: { data: T[]; x: keyof T; y: keyof T; color?: string; money?: boolean; label: string }) {
   const fmt = (v: number) => (money ? inr(v) : String(v));
   return (
     <div className="h-56 w-full" role="img" aria-label={label}>
       <ResponsiveContainer>
         <RBarChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-          <CartesianGrid vertical={false} stroke="#EDEDF3" />
+          <CartesianGrid vertical={false} stroke="#EEEEE9" />
           <XAxis dataKey={x as string} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B6F86", fontWeight: 700 }} />
           <YAxis axisLine={false} tickLine={false} width={48} tick={{ fontSize: 11, fill: "#6B6F86" }} tickFormatter={(v) => fmt(Number(v))} />
           <Tooltip

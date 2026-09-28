@@ -20,16 +20,54 @@ function UsersPage() {
   return (
     <div>
       <PageTitle kicker="People" title="Users" />
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="no-scrollbar -mx-4 mb-4 flex items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
         {(["all", "driver", "owner", "admin"] as const).map((r) => (
           <Chip key={r} active={role === r} onClick={() => setRole(r)}>
             <span className="capitalize">{r === "all" ? "Everyone" : `${r}s`}</span>
           </Chip>
         ))}
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name…" className="ml-auto rounded-full bg-white px-4 py-2 text-sm ring-1 ring-road-dark/60" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name…" className="ml-auto min-w-40 rounded-full bg-white px-4 py-2 text-sm ring-1 ring-line" />
       </div>
       {!data && <Skeleton className="h-64" />}
-      <div className="overflow-hidden rounded-[2rem] bg-white shadow-soft">
+      <div className="space-y-2 sm:hidden">
+        {list.map((u) => (
+          <div key={u.id} className={`rounded-3xl bg-white p-4 shadow-soft ${u.suspended ? "ring-2 ring-bad/30" : ""}`}>
+            <div className="flex items-center gap-3">
+              <Avatar name={u.name} color={u.avatar_color} size={38} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 text-sm font-bold">{u.name} {u.suspended ? <Badge color="rose">Suspended</Badge> : null}</div>
+                <div className="text-xs capitalize text-muted">
+                  {u.role} · {u.role === "driver" ? `${u.bookings} bookings` : u.role === "owner" ? `${u.spots} spots` : "platform"} · {inr(u.wallet)}
+                  {u.fraud_score > 0 ? ` · ⚑ ${u.fraud_score}` : ""}
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              {u.id !== me?.user.id && (
+                <Button size="sm" variant="soft" className="flex-1" onClick={() => switchTo(u.id)}>
+                  <LogIn className="h-3.5 w-3.5" /> Log in as
+                </Button>
+              )}
+              {u.role !== "admin" && (
+                <Button
+                  size="sm"
+                  variant={u.suspended ? "soft" : "danger"}
+                  className="flex-1"
+                  onClick={async () => {
+                    const r = await api(`admin/users/${u.id}/suspend`, {});
+                    toast(r.suspended ? `${u.name} suspended` : `${u.name} restored`, r.suspended ? "warning" : "success");
+                    reload();
+                    refresh();
+                  }}
+                >
+                  {u.suspended ? <RotateCcw className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />} {u.suspended ? "Restore" : "Suspend"}
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="hidden overflow-hidden rounded-[2rem] bg-white shadow-soft sm:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -45,7 +83,7 @@ function UsersPage() {
             </thead>
             <tbody>
               {list.map((u, i) => (
-                <motion.tr key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className={`border-t border-road ${u.suspended ? "bg-rose/30" : ""}`}>
+                <motion.tr key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className={`border-t border-road ${u.suspended ? "bg-bad-soft/60" : ""}`}>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <Avatar name={u.name} color={u.avatar_color} size={34} />

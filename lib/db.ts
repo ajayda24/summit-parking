@@ -1,10 +1,12 @@
-import Database from "better-sqlite3";
-import fs from "fs";
-import path from "path";
+import type { SqlJsStatic } from "sql.js";
 import { seed } from "./seed";
+import { wrap, type DB } from "./sqlite";
 
-const DIR = path.join(process.cwd(), "data");
-const FILE = path.join(DIR, "parking.db");
+/**
+ * The database lives on the device: SQLite (sql.js / WebAssembly) in memory,
+ * persisted to IndexedDB after every change. No server or setup needed, so the app
+ * works as soon as it's deployed (e.g. on Vercel) and survives page reloads.
+ */
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS users (
@@ -61,25 +63,92 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 `;
 
-type G = typeof globalThis & { __parkingDb?: Database.Database };
-const g = globalThis as G;
+const IDB_NAME = "summit-parking";
+const IDB_STORE = "db";
+const IDB_KEY = "v1";
 
-export function db(): Database.Database {
-  if (!g.__parkingDb) {
-    fs.mkdirSync(DIR, { recursive: true });
-    const d = new Database(FILE);
-    d.pragma("journal_mode = WAL");
-    d.exec(SCHEMA);
-    const { n } = d.prepare("SELECT COUNT(*) AS n FROM users").get() as { n: number };
-    if (n === 0) d.transaction(() => seed(d))();
-    g.__parkingDb = d;
+let SQL: SqlJsStatic | null = null;
+let current: DB | null = null;
+let ready: Promise<void> | null = null;
+
+type InitSqlJs = (cfg: { locateFile: (f: string) => string }) => Promise<SqlJsStatic>;
+const loader = () => (window as unknown as { initSqlJs?: InitSqlJs }).initSqlJs;
+
+function loadScript(src: string) {
+  return new Promise<void>((resolve, reject) => {
+    if (loader()) return resolve();
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Could not load the database engine"));
+    document.head.appendChild(s);
+  });
+}
+
+function idb<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest): Promise<T | undefined> {
+  return new Promise((resolve) => {
+    try {
+      const open = indexedDB.open(IDB_NAME, 1);
+      open.onupgradeneeded = () => open.result.createObjectStore(IDB_STORE);
+      open.onerror = () => resolve(undefined);
+      open.onsuccess = () => {
+        const tx = open.result.transaction(IDB_STORE, mode);
+        const req = fn(tx.objectStore(IDB_STORE));
+        req.onsuccess = () => resolve(req.result as T);
+        req.onerror = () => resolve(undefined);
+      };
+    } catch {
+      resolve(undefined);
+    }
+  });
+}
+
+function fresh(): DB {
+  const d = wrap(new SQL!.Database());
+  d.exec(SCHEMA);
+  d.transaction(() => seed(d))();
+  return d;
+}
+
+export function initDb(): Promise<void> {
+  if (!ready) {
+    ready = (async () => {
+      await loadScript("/sqljs/sql-wasm.js");
+      SQL = await loader()!({ locateFile: (f) => `/sqljs/${f}` });
+      const saved = await idb<Uint8Array>("readonly", (s) => s.get(IDB_KEY));
+      if (saved) {
+        try {
+          current = wrap(new SQL.Database(saved));
+          current.exec(SCHEMA);
+          current.dirty = false;
+        } catch {
+          current = null;
+        }
+      }
+      if (!current) {
+        current = fresh();
+        await persist(true);
+      }
+    })();
   }
-  return g.__parkingDb;
+  return ready;
+}
+
+export function db(): DB {
+  if (!current) throw new Error("Database not ready yet");
+  return current;
 }
 
 export function resetDb() {
-  g.__parkingDb?.close();
-  g.__parkingDb = undefined;
-  for (const f of [FILE, FILE + "-wal", FILE + "-shm"]) fs.rmSync(f, { force: true });
-  db();
+  current?.raw.close();
+  current = fresh();
+  current.dirty = true;
+}
+
+/** Saves the database to IndexedDB if anything changed since the last save. */
+export async function persist(force = false) {
+  if (!current || (!force && !current.dirty)) return;
+  const bytes = current.raw.export();
+  current.dirty = false;
+  await idb("readwrite", (s) => s.put(bytes, IDB_KEY));
 }

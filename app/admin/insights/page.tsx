@@ -7,7 +7,7 @@ import { RoleGate } from "@/components/AppShell";
 import { SpotImage } from "@/components/illustrations";
 import { Map } from "@/components/Map";
 import { Badge, Button, PageTitle, Skeleton, Stars, useLoader } from "@/components/ui";
-import { ago, api } from "@/lib/client";
+import { ago, api, downloadCsv } from "@/lib/client";
 
 type I = {
   zones: { zone: string; lat: number; lng: number; supply: number; demand: number; ratio: number }[];
@@ -19,7 +19,7 @@ type M = {
 };
 
 // Sequential scale for demand/supply pressure: one hue, light → dark.
-const pressure = (r: number) => (r >= 2 ? "#E8574A" : r >= 1.2 ? "#FF7A6B" : r >= 0.6 ? "#FFB59E" : "#FFD6BF");
+const pressure = (r: number) => (r >= 2 ? "#2F4DB5" : r >= 1.2 ? "#4263D6" : r >= 0.6 ? "#8FA3E8" : "#C9D4F4");
 const BAD_WORDS = /scam|fraud|worst|call \d|\d{5,}/i;
 
 function Insights() {
@@ -31,8 +31,8 @@ function Insights() {
     <div>
       <PageTitle kicker="Marketplace health" title="Insights & moderation">
         <div className="flex gap-2">
-          <a href="/api/admin/export?type=bookings"><Button variant="soft"><Download className="h-4 w-4" /> Bookings CSV</Button></a>
-          <a href="/api/admin/export?type=transactions"><Button variant="soft"><Download className="h-4 w-4" /> Payments CSV</Button></a>
+          <Button variant="soft" size="sm" onClick={() => downloadCsv("bookings")}><Download className="h-4 w-4" /> Bookings CSV</Button>
+          <Button variant="soft" size="sm" onClick={() => downloadCsv("transactions")}><Download className="h-4 w-4" /> Payments CSV</Button>
         </div>
       </PageTitle>
 
@@ -45,7 +45,7 @@ function Insights() {
           <div className="h-80">
             <Map showHere={false} zoom={13} center={[12.945, 77.635]} circles={data.zones.map((z) => ({ lat: z.lat, lng: z.lng, radius: 400 + z.demand * 90, color: pressure(z.ratio), label: `${z.zone}: ${z.ratio}×` }))} />
           </div>
-          <div className="grid grid-cols-3 divide-x divide-road border-t border-road">
+          <div className="grid grid-cols-3 divide-x divide-road border-t border-road text-[13px]">
             {data.zones.map((z) => (
               <div key={z.zone} className="p-4">
                 <div className="flex items-center gap-2 text-sm font-extrabold"><span className="h-3 w-3 rounded-full" style={{ background: pressure(z.ratio) }} />{z.zone}</div>
@@ -57,11 +57,11 @@ function Insights() {
         </div>
 
         <div className="rounded-[2rem] bg-white p-5 shadow-soft">
-          <div className="mb-3 flex items-center gap-2 font-extrabold"><Flag className="h-4 w-4 text-coral" /> Fraud & risk flags</div>
+          <div className="mb-3 flex items-center gap-2 font-extrabold"><Flag className="h-4 w-4 text-bad" /> Fraud & risk flags</div>
           <div className="space-y-2">
             {data.flags.length === 0 && <div className="text-sm text-muted">No flags. Looking healthy.</div>}
             {data.flags.map((f, i) => (
-              <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className={`flex items-center gap-3 rounded-2xl p-3 ${f.severity === "high" ? "bg-rose/60" : "bg-butter/60"}`}>
+              <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className={`flex items-center gap-3 rounded-2xl p-3 ${f.severity === "high" ? "bg-bad-soft" : "bg-warn-soft"}`}>
                 <Badge color={f.severity === "high" ? "coral" : "butter"}>{f.severity}</Badge>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-bold">{f.name} <span className="text-xs font-medium capitalize text-muted">· {f.role}</span></div>
@@ -81,7 +81,7 @@ function Insights() {
             {mod.reviews.map((r) => {
               const suspicious = BAD_WORDS.test(r.text ?? "");
               return (
-                <div key={r.id} className={`flex items-start gap-3 rounded-2xl p-3 ${r.hidden ? "bg-road/60 opacity-60" : suspicious ? "bg-rose/50" : "bg-cream"}`}>
+                <div key={r.id} className={`flex items-start gap-3 rounded-2xl p-3 ${r.hidden ? "bg-road/60 opacity-60" : suspicious ? "bg-bad-soft" : "bg-cream"}`}>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <b>{r.from_name}</b> → {r.spot_title ?? r.to_name} <Stars value={r.stars} size={11} /> <span className="text-muted">{ago(r.created_at, now)}</span>

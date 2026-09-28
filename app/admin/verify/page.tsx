@@ -108,7 +108,7 @@ function Verify() {
                 <span className="rounded-full bg-road px-2 py-0.5 capitalize">{open.road_width} road</span>
                 <span className="rounded-full bg-road px-2 py-0.5 capitalize">{open.spot_type}</span>
                 <span className="rounded-full bg-road px-2 py-0.5">{inr(open.price)}/hr</span>
-                {open.amenities.map((a) => <span key={a} className="rounded-full bg-mint px-2 py-0.5">{AMENITY_LABEL[a]}</span>)}
+                {open.amenities.map((a) => <span key={a} className="rounded-full bg-road px-2 py-0.5">{AMENITY_LABEL[a]}</span>)}
               </div>
             </div>
             <div>

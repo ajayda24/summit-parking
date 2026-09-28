@@ -57,29 +57,28 @@ export default function WalletPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <PageTitle kicker="Payments" title="Wallet" />
-      <div className="grid gap-5 md:grid-cols-[1.2fr_1fr]">
-        <motion.div initial={{ rotateX: 20, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-lavender via-sky to-mint p-7 shadow-pop">
-          <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/25" />
-          <div className="absolute -bottom-16 left-10 h-40 w-72 rounded-full bg-white/20" />
-          <div className="road-strip absolute bottom-0 left-0 right-0 h-6 opacity-70" />
+      <div className="grid gap-4 md:grid-cols-[1.2fr_1fr] md:gap-5">
+        <motion.div initial={{ rotateX: 20, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} className="relative overflow-hidden rounded-[2rem] bg-brand p-6 text-white shadow-pop sm:p-7">
+          <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />
+          <div className="absolute bottom-0 left-0 right-0 h-5 bg-white/10 [background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.5)_0_18px,transparent_18px_36px)] [background-position:center] [background-repeat:repeat-x] [background-size:100%_2px]" />
           <div className="relative">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-ink/60">
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-white/70">
                 <Wallet className="h-4 w-4" /> Summit wallet
               </div>
-              <span className="rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-extrabold">DEMO MONEY</span>
+              <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-extrabold">DEMO MONEY</span>
             </div>
-            <div className={`mt-6 text-5xl font-black ${me.user.wallet < 0 ? "text-coral-deep" : ""}`}>
+            <div className={`mt-6 text-5xl font-black ${me.user.wallet < 0 ? "text-[#FFD9D4]" : ""}`}>
               <CountUp value={data?.balance ?? me.user.wallet} />
             </div>
-            <div className="mt-1 text-sm font-bold text-ink/60">{me.user.name}</div>
+            <div className="mt-1 text-sm font-bold text-white/70">{me.user.name}</div>
             {me.user.wallet < 0 && <div className="mt-2 rounded-xl bg-white/70 px-3 py-1.5 text-xs font-bold text-coral-deep">Negative balance from overtime. Top up to book again.</div>}
             <div className="mt-6 flex gap-2">
-              <Button onClick={() => { setMode("add"); setAmount(500); }}>
+              <Button variant="soft" onClick={() => { setMode("add"); setAmount(500); }}>
                 <Plus className="h-4 w-4" /> Add money
               </Button>
               {isOwner && (
-                <Button variant="dark" onClick={() => { setMode("withdraw"); setAmount(Math.max(0, Math.floor(me.user.wallet))); }} disabled={me.user.wallet <= 0}>
+                <Button variant="dark" className="!bg-white/15 hover:!bg-white/25" onClick={() => { setMode("withdraw"); setAmount(Math.max(0, Math.floor(me.user.wallet))); }} disabled={me.user.wallet <= 0}>
                   <Landmark className="h-4 w-4" /> Withdraw
                 </Button>
               )}
@@ -87,13 +86,13 @@ export default function WalletPage() {
           </div>
         </motion.div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
-          <div className="rounded-[2rem] bg-mint p-5">
-            <ArrowDownLeft className="h-5 w-5" />
+          <div className="rounded-[2rem] bg-white p-5 shadow-soft">
+            <ArrowDownLeft className="h-5 w-5 text-ok" />
             <div className="mt-2 text-xs font-extrabold uppercase tracking-widest text-ink/50">Money in</div>
             <div className="text-2xl font-black"><CountUp value={inflow} /></div>
           </div>
-          <div className="rounded-[2rem] bg-peach p-5">
-            <ArrowUpRight className="h-5 w-5" />
+          <div className="rounded-[2rem] bg-white p-5 shadow-soft">
+            <ArrowUpRight className="h-5 w-5 text-muted" />
             <div className="mt-2 text-xs font-extrabold uppercase tracking-widest text-ink/50">Money out</div>
             <div className="text-2xl font-black"><CountUp value={outflow} /></div>
           </div>
@@ -107,7 +106,7 @@ export default function WalletPage() {
           <AnimatePresence>
             {data?.transactions.map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.02, 0.4) }} className="flex items-center gap-3 py-3">
-                <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${t.amount >= 0 ? "bg-mint" : "bg-peach"}`}>
+                <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${t.amount >= 0 ? "bg-ok-soft text-ok" : "bg-road text-muted"}`}>
                   {t.amount >= 0 ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -148,7 +147,7 @@ export default function WalletPage() {
               </div>
             ) : (
               <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white p-3">
-                <Building2 className="h-8 w-8 rounded-xl bg-sky p-1.5" />
+                <Building2 className="h-8 w-8 rounded-xl bg-brand-soft p-1.5 text-brand" />
                 <div className="text-sm">
                   <div className="font-bold">Demo Bank ••4821</div>
                   <div className="text-xs text-muted">IFSC DEMO0001234 · instant (demo)</div>

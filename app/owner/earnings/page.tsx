@@ -25,7 +25,7 @@ function Earnings() {
     <div>
       <PageTitle kicker="Money from unused space" title="Earnings">
         <Link href="/wallet">
-          <Button variant="dark">
+          <Button variant="soft">
             <Landmark className="h-4 w-4" /> Withdraw {inr(data.wallet)}
           </Button>
         </Link>
@@ -48,7 +48,20 @@ function Earnings() {
         {data.rows.length === 0 ? (
           <EmptyRoad title="No payouts yet" text="As soon as a driver checks out, your earnings show up here." />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="space-y-2 sm:hidden">
+            {data.rows.map((r) => (
+              <div key={r.id} className="flex items-center gap-3 rounded-2xl bg-cream p-3">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-bold">{r.title}</div>
+                  <div className="text-[11px] text-muted">{r.driver} · {fmtDateTime(r.when)}</div>
+                  <div className="mt-1 flex items-center gap-1.5"><StatusBadge status={r.status} />{r.overtime ? <span className="text-[10px] font-bold text-muted">+{inr(r.overtime)} overtime</span> : null}</div>
+                </div>
+                <div className="text-right text-sm font-black text-ok">+{inr(r.payout)}</div>
+              </div>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-[11px] font-extrabold uppercase tracking-widest text-muted">
@@ -79,6 +92,7 @@ function Earnings() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>

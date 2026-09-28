@@ -11,12 +11,23 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-- Data lives in SQLite (`data/parking.db`). It's created and seeded automatically on first request.
-- Reset to fresh seed data with the **Demo → Reset demo data** button, or `npm run reset`.
-- Use the **account switcher** (avatar, top right) to jump between drivers, owners and the admin. No passwords.
-- The **Demo pill** (bottom right) fast-forwards the clock (+15/+30/+60 min) so you can show overstays and no-shows, and can simulate a failed payment.
+### Deploy to Vercel (zero config)
+Import the repo in Vercel and click **Deploy**. No environment variables and no database to set up.
 
-Stack: Next.js 16 (App Router) · TypeScript · Tailwind v4 · Framer Motion · Leaflet (OSM/CARTO tiles) · better-sqlite3 · Recharts.
+The whole marketplace engine (bookings, wallet ledger, verification, refunds, overtime) runs **on the device**: SQLite compiled to WebAssembly ([sql.js](https://github.com/sql-js/sql.js), served from `public/sqljs/`), saved to the browser's IndexedDB after every change. That means:
+- it works the moment the deploy finishes, on any phone or laptop that opens the URL;
+- data survives reloads and closing the tab (per device/browser);
+- each device has its own copy of the demo world, seeded on first open.
+
+### Demo tips (mobile first)
+- Open the URL on your phone. It's designed for a 390px screen, with a bottom tab bar, bottom sheets and big tap targets. **Add to Home Screen** makes it launch full-screen like an app.
+- **Account switcher**: tap the avatar (top right) to jump between drivers, owners and the admin. No passwords.
+- **Demo button** (flask, bottom right): fast-forward the clock (+15/+30/+60 min) to show overstays and no-shows, simulate a failed payment, or **Reset demo data**.
+- Booking requests auto-expire 15 minutes after they're made, so press **Reset demo data** shortly before presenting to get fresh seed data (a live overstay, a pending verification, an open dispute, a fresh request).
+
+Stack: Next.js 16 (App Router) · TypeScript · Tailwind v4 · Framer Motion · Leaflet (OSM/CARTO tiles) · sql.js (SQLite/WASM) + IndexedDB · Recharts.
+
+Design: a restrained light palette with a warm off-white background, white cards, **one** calm accent (parking-sign blue), and soft green/amber/red tints used only for status (success, warning, problem). Illustrations use the same few colours.
 
 ---
 
@@ -117,10 +128,13 @@ Alternative paths: cancel early vs late (Riya's upcoming booking), request mode 
 
 ## Project layout
 ```
-app/                 pages (driver/, owner/, admin/, wallet/) + api/[...path] catch-all route
+app/                 pages (driver/, owner/, admin/, wallet/), manifest, icon
 components/          AppShell (header, switcher, bell, demo pill), illustrations (road art), ui kit, MapView, PaySheet, ListingWizard
-lib/shared.ts        pure rules shared by client + server (fit, pricing, overtime, refunds)
-lib/api.ts           all server endpoints + lifecycle sweep (no-show, request expiry, overstay alerts)
+lib/shared.ts        pure rules shared by the engine and the UI (fit, pricing, overtime, refunds)
+lib/api.ts           all marketplace endpoints (run in the browser) + lifecycle sweep (no-show, request expiry, overstay alerts)
+lib/db.ts            loads sql.js, creates schema + seed, persists to IndexedDB
+lib/sqlite.ts        small better-sqlite3-style wrapper over sql.js
+lib/client.ts        api() helper the UI calls (same shape as an HTTP API)
 lib/ledger.ts        wallet transfers, notifications, settings
 lib/seed.ts          demo users, spots, bookings in every state, reviews, disputes
 ```

@@ -1,8 +1,8 @@
-import type Database from "better-sqlite3";
+import type { DB } from "./sqlite";
 import { credit, notify, payOwner, PLATFORM_ID, setSetting, transfer } from "./ledger";
 import { FEE, HOUR, MIN, overtime } from "./shared";
 
-type D = Database.Database;
+type D = DB;
 const DAY = 24 * HOUR;
 
 export function seed(d: D) {

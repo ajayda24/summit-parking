@@ -21,7 +21,7 @@ type B = {
 type BoardSpot = { id: number; title: string; size: string; state: string; price: number; live: B | null; next: B | null };
 type Board = { board: BoardSpot[]; requests: B[]; upcoming: B[]; live: B[]; recent: B[]; stats: { today: number; total: number; wallet: number; occupancy: number; spots: number; rating: number } };
 
-const BAY: Record<string, string> = { free: "bg-mint", live: "bg-sky", overstay: "bg-rose", upcoming: "bg-butter", paused: "bg-road", pending: "bg-butter/60", rejected: "bg-rose/60" };
+const BAY: Record<string, string> = { free: "bg-white ring-1 ring-line", live: "bg-brand-soft ring-1 ring-brand/20", overstay: "bg-bad-soft ring-1 ring-bad/20", upcoming: "bg-warn-soft ring-1 ring-warn/15", paused: "bg-road", pending: "bg-road", rejected: "bg-road" };
 
 function OwnerBoard() {
   const { me, now, toast, refresh } = useApp();
@@ -58,10 +58,36 @@ function OwnerBoard() {
 
   if (!data) return <Skeleton className="h-[60vh]" />;
   const s = data.stats;
+  const qrCard = (
+            <div className="overflow-hidden rounded-[2rem] bg-ink p-5 text-white shadow-pop">
+              <div className="flex items-center gap-2 font-extrabold"><QrCode className="h-5 w-5 text-mint" /> Check a driver in</div>
+              <p className="mt-1 text-xs text-white/60">Scan the driver's QR, or type the code on their pass.</p>
+              <div className="relative mx-auto mt-4 grid h-36 w-36 place-items-center rounded-3xl border-2 border-dashed border-white/30">
+                <ScanLine className="h-10 w-10 text-white/40" />
+                {scanning && <motion.div className="absolute inset-x-3 h-0.5 bg-white shadow-[0_0_12px_#C9D4F4]" initial={{ top: 12 }} animate={{ top: [12, 128, 12] }} transition={{ repeat: Infinity, duration: 1 }} />}
+              </div>
+              <div className="mt-4 flex gap-2">
+                <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="SP-XXXXXX" className="min-w-0 flex-1 rounded-2xl bg-white/10 px-3 py-2 font-mono text-sm font-bold tracking-widest placeholder:text-white/30" />
+                <Button onClick={() => verify()} loading={scanning} disabled={!code}>Verify</Button>
+              </div>
+              {data.upcoming.filter((b) => b.start_at - now < 3 * 60 * MIN).length > 0 && (
+                <div className="mt-3">
+                  <div className="text-[10px] font-extrabold uppercase tracking-widest text-white/40">Arriving soon · tap to simulate a scan</div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {data.upcoming.filter((b) => b.start_at - now < 3 * 60 * MIN).map((b) => (
+                      <button key={b.id} onClick={() => { setCode(b.code); verify(b.code); }} className="rounded-full bg-white/10 px-2.5 py-1 font-mono text-[11px] font-bold hover:bg-white/20">
+                        {b.code} · {b.driver.name.split(" ")[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+  );
   return (
     <div>
       <PageTitle kicker={`Hi ${me?.user.name.split(" ")[0]}`} title="Your live parking board">
-        <Link href="/owner/new"><Button>+ List a spot</Button></Link>
+        <Link href="/owner/new" className="hidden lg:block"><Button>+ List a spot</Button></Link>
       </PageTitle>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -78,12 +104,13 @@ function OwnerBoard() {
           </EmptyRoad>
         </div>
       ) : (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-          <div className="space-y-6">
+        <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1.6fr_1fr] lg:gap-6">
+          <div className="space-y-5 lg:space-y-6">
+            <div className="lg:hidden">{qrCard}</div>
             {/* Requests */}
             <AnimatePresence>
               {data.requests.length > 0 && (
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-[2rem] bg-butter p-5">
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-[2rem] bg-white p-5 shadow-soft ring-2 ring-warn/20">
                   <div className="mb-3 flex items-center gap-2 font-extrabold"><Timer className="h-5 w-5" /> Booking requests</div>
                   <div className="space-y-2">
                     {data.requests.map((b) => (
@@ -105,10 +132,10 @@ function OwnerBoard() {
 
             {/* Occupancy board */}
             <div className="rounded-[2rem] bg-white p-5 shadow-soft">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <div className="font-extrabold">Live occupancy</div>
-                <div className="flex gap-2 text-[10px] font-bold">
-                  {[["bg-mint", "Free"], ["bg-butter", "Booked soon"], ["bg-sky", "Live"], ["bg-rose", "Overstay"]].map(([c, l]) => (
+                <div className="flex flex-wrap gap-2 text-[10px] font-bold">
+                  {[["bg-white ring-1 ring-line", "Free"], ["bg-warn-soft", "Soon"], ["bg-brand-soft", "Live"], ["bg-bad-soft", "Overstay"]].map(([c, l]) => (
                     <span key={l} className="flex items-center gap-1"><span className={`h-2.5 w-2.5 rounded ${c}`} />{l}</span>
                   ))}
                 </div>
@@ -168,33 +195,8 @@ function OwnerBoard() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            {/* QR verify */}
-            <div className="overflow-hidden rounded-[2rem] bg-ink p-5 text-white shadow-pop">
-              <div className="flex items-center gap-2 font-extrabold"><QrCode className="h-5 w-5 text-mint" /> Check a driver in</div>
-              <p className="mt-1 text-xs text-white/60">Scan the driver's QR, or type the code on their pass.</p>
-              <div className="relative mx-auto mt-4 grid h-36 w-36 place-items-center rounded-3xl border-2 border-dashed border-white/30">
-                <ScanLine className="h-10 w-10 text-white/40" />
-                {scanning && <motion.div className="absolute inset-x-3 h-0.5 bg-mint shadow-[0_0_12px_#BDEBD6]" initial={{ top: 12 }} animate={{ top: [12, 128, 12] }} transition={{ repeat: Infinity, duration: 1 }} />}
-              </div>
-              <div className="mt-4 flex gap-2">
-                <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="SP-XXXXXX" className="min-w-0 flex-1 rounded-2xl bg-white/10 px-3 py-2 font-mono text-sm font-bold tracking-widest placeholder:text-white/30" />
-                <Button onClick={() => verify()} loading={scanning} disabled={!code}>Verify</Button>
-              </div>
-              {data.upcoming.filter((b) => b.start_at - now < 3 * 60 * MIN).length > 0 && (
-                <div className="mt-3">
-                  <div className="text-[10px] font-extrabold uppercase tracking-widest text-white/40">Arriving soon · tap to simulate a scan</div>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {data.upcoming.filter((b) => b.start_at - now < 3 * 60 * MIN).map((b) => (
-                      <button key={b.id} onClick={() => { setCode(b.code); verify(b.code); }} className="rounded-full bg-white/10 px-2.5 py-1 font-mono text-[11px] font-bold hover:bg-white/20">
-                        {b.code} · {b.driver.name.split(" ")[0]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
+          <div className="space-y-5 lg:space-y-6">
+            <div className="hidden lg:block">{qrCard}</div>
             {/* Recent */}
             <div className="rounded-[2rem] bg-white p-5 shadow-soft">
               <div className="mb-3 flex items-center justify-between font-extrabold">

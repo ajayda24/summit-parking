@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 export const Map = dynamic(() => import("./MapView"), {
   ssr: false,
   loading: () => (
-    <div className="grid h-full w-full place-items-center bg-[#f3f1ec] text-sm font-bold text-ink/40">
+    <div className="grid h-full w-full place-items-center bg-road text-sm font-bold text-ink/40">
       <div className="road-strip h-3 w-40 animate-pulse rounded-full" />
     </div>
   ),

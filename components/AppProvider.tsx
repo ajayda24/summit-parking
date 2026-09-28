@@ -83,11 +83,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const icons = { success: CheckCircle2, error: XCircle, info: Info, warning: TriangleAlert };
-  const colors = { success: "bg-mint", error: "bg-rose", info: "bg-sky", warning: "bg-butter" };
+  const colors = { success: "bg-white text-ok", error: "bg-white text-bad", info: "bg-white text-ink", warning: "bg-white text-warn" };
 
   return (
     <AppCtx.Provider value={{ me, users, now, refresh, toast, switchTo, tick }}>
       {children}
+      <AnimatePresence>
+        {!me && (
+          <motion.div key="splash" exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="fixed inset-0 z-[2000] grid place-items-center bg-cream">
+            <div className="flex flex-col items-center">
+              <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="grid h-16 w-16 place-items-center rounded-2xl bg-brand text-3xl font-black text-white shadow-pop">
+                P
+              </motion.div>
+              <div className="mt-4 text-xl font-extrabold">Summit Parking</div>
+              <div className="road-strip mt-5 h-3 w-40 overflow-hidden rounded-full">
+                <motion.div className="h-full w-10 rounded-full bg-brand" animate={{ x: [-40, 160] }} transition={{ repeat: Infinity, duration: 1.1, ease: "easeInOut" }} />
+              </div>
+              <div className="mt-3 text-xs font-bold text-muted">Setting up your parking lot…</div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="pointer-events-none fixed inset-x-0 top-20 z-[1000] flex flex-col items-center gap-2 px-4">
         <AnimatePresence>
           {toasts.map((t) => {
@@ -99,7 +115,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 initial={{ opacity: 0, y: -20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                className={`pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl ${colors[t.kind]} px-4 py-3 text-sm font-semibold shadow-pop`}
+                className={`pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl ${colors[t.kind]} px-4 py-3 text-sm font-semibold shadow-pop ring-1 ring-line`}
               >
                 <Icon className="h-5 w-5 shrink-0" />
                 {t.text}

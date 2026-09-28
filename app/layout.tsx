@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { AppProvider } from "@/components/AppProvider";
@@ -7,6 +7,15 @@ import { AppShell } from "@/components/AppShell";
 export const metadata: Metadata = {
   title: "Summit Parking — park it, earn it",
   description: "A marketplace for parking spaces: owners list, drivers book, everyone gets there.",
+  appleWebApp: { capable: true, title: "Summit", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#F7F7F4",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

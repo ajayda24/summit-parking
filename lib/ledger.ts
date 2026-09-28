@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
+import type { DB } from "./sqlite";
 
-type D = Database.Database;
+type D = DB;
 
 export const PLATFORM_ID = 8; // Ops Admin holds the platform / escrow wallet
 

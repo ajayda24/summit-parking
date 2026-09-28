@@ -55,15 +55,15 @@ export function SpotCard({
           <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] font-bold">
             <span className="rounded-full bg-road px-2 py-0.5">Size {spot.size}</span>
             {spot.covered ? (
-              <span className="flex items-center gap-1 rounded-full bg-sky px-2 py-0.5"><Umbrella className="h-3 w-3" />Covered</span>
+              <span className="flex items-center gap-1 rounded-full bg-road px-2 py-0.5 text-ink/70"><Umbrella className="h-3 w-3" />Covered</span>
             ) : null}
             {spot.amenities.includes("ev_charger") && (
-              <span className="flex items-center gap-1 rounded-full bg-mint px-2 py-0.5"><BatteryCharging className="h-3 w-3" />EV</span>
+              <span className="flex items-center gap-1 rounded-full bg-road px-2 py-0.5 text-ink/70"><BatteryCharging className="h-3 w-3 text-ok" />EV</span>
             )}
             {spot.rating > 0 && (
-              <span className="flex items-center gap-1 rounded-full bg-butter px-2 py-0.5"><Star className="h-3 w-3 fill-current" />{spot.rating} ({spot.reviews})</span>
+              <span className="flex items-center gap-1 rounded-full bg-road px-2 py-0.5 text-ink/70"><Star className="h-3 w-3 fill-[#E8B530] text-[#E8B530]" />{spot.rating} ({spot.reviews})</span>
             )}
-            {spot.mode === "request" && <span className="rounded-full bg-lavender px-2 py-0.5">On request</span>}
+            {spot.mode === "request" && <span className="rounded-full bg-road px-2 py-0.5 text-ink/70">On request</span>}
           </div>
           {!ok && <div className="mt-2 text-xs font-bold text-coral-deep">🚫 Too small for your {vehicle}</div>}
           {ok && narrow && (

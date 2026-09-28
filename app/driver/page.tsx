@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { BatteryCharging, List, Map as MapIcon, Plus, Scale, SlidersHorizontal, Star, Umbrella, X } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { RoleGate } from "@/components/AppShell";
 import { EmptyRoad, SpotImage, VehicleArt } from "@/components/illustrations";
@@ -21,7 +21,7 @@ function VehicleStrip() {
   const [form, setForm] = useState({ label: "", plate: "", type: "hatchback", fuel: "petrol" });
   if (!me) return null;
   return (
-    <div className="mb-5 flex gap-3 overflow-x-auto pb-2">
+    <div className="no-scrollbar -mx-4 mb-4 flex gap-3 overflow-x-auto px-4 pb-2">
       {me.vehicles.map((v) => (
         <motion.button
           key={v.id}
@@ -32,18 +32,18 @@ function VehicleStrip() {
             await refresh();
             toast(`Now searching for your ${v.label}`, "info");
           }}
-          className={`relative flex shrink-0 items-center gap-3 rounded-3xl p-3 pr-5 text-left transition ${v.active ? "bg-ink text-white shadow-pop" : "bg-white shadow-soft"}`}
+          className={`relative flex shrink-0 items-center gap-3 rounded-3xl p-2.5 pr-4 text-left transition ${v.active ? "bg-white shadow-soft ring-2 ring-brand" : "bg-white/70 ring-1 ring-line"}`}
         >
-          <motion.div animate={v.active ? { y: [0, -4, 0] } : {}} transition={{ repeat: Infinity, duration: 1.6 }} className={`grid h-12 w-16 place-items-center rounded-2xl ${v.active ? "bg-white/10" : "bg-cream"}`}>
+          <motion.div animate={v.active ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 1.6 }} className={`grid h-11 w-14 place-items-center rounded-2xl ${v.active ? "bg-brand-soft" : "bg-cream opacity-60"}`}>
             <VehicleArt type={v.type} className="w-14" />
           </motion.div>
           <div>
             <div className="text-sm font-extrabold">{v.label}</div>
-            <div className={`text-[11px] font-bold capitalize ${v.active ? "text-white/60" : "text-muted"}`}>
+            <div className="text-[11px] font-bold capitalize text-muted">
               {v.type} · {v.fuel}
             </div>
           </div>
-          {v.active ? <span className="absolute -top-1.5 right-3 rounded-full bg-mint px-2 text-[10px] font-extrabold text-ink">ACTIVE</span> : null}
+          {v.active ? <span className="absolute -top-2 right-3 rounded-full bg-brand px-2 text-[9px] font-extrabold text-white">ACTIVE</span> : null}
         </motion.button>
       ))}
       <button onClick={() => setAdding(true)} className="flex shrink-0 items-center gap-2 rounded-3xl border-2 border-dashed border-road-dark px-5 text-sm font-bold text-ink/60 hover:bg-white">
@@ -52,7 +52,7 @@ function VehicleStrip() {
       <Modal open={adding} onClose={() => setAdding(false)} title="Add a vehicle">
         <div className="grid grid-cols-5 gap-2">
           {VEHICLES.map((v) => (
-            <motion.button key={v.type} whileTap={{ scale: 0.9 }} onClick={() => setForm({ ...form, type: v.type })} className={`rounded-2xl p-2 text-center ring-2 ${form.type === v.type ? "bg-lavender ring-lavender-deep" : "bg-white ring-transparent"}`}>
+            <motion.button key={v.type} whileTap={{ scale: 0.9 }} onClick={() => setForm({ ...form, type: v.type })} className={`rounded-2xl p-2 text-center ring-2 ${form.type === v.type ? "bg-brand-soft ring-brand" : "bg-white ring-transparent"}`}>
               <motion.div animate={form.type === v.type ? { y: [0, -6, 0] } : {}}>
                 <VehicleArt type={v.type} className="w-full" />
               </motion.div>
@@ -115,7 +115,7 @@ function CompareSheet({ spots, vehicle, onClose, open }: { spots: SpotLite[]; ve
                 <th key={s.id} className="p-2 text-left align-bottom">
                   <SpotImage spot={s} className="mb-2 h-20 w-full rounded-2xl" />
                   <div className="font-extrabold">{s.title}</div>
-                  {best?.id === s.id && <span className="mt-1 inline-block rounded-full bg-mint px-2 text-[10px] font-extrabold">Best value</span>}
+                  {best?.id === s.id && <span className="mt-1 inline-block rounded-full bg-ok-soft px-2 text-[10px] font-extrabold text-ok">Best value</span>}
                 </th>
               ))}
             </tr>
@@ -157,7 +157,10 @@ function Search() {
   const [maxPrice, setMaxPrice] = useState(100);
   const [minRating, setMinRating] = useState(0);
   const [sort, setSort] = useState<Sort>("distance");
-  const [view, setView] = useState<"split" | "map" | "list">("split");
+  const [view, setView] = useState<"split" | "map" | "list">("list");
+  useEffect(() => {
+    if (window.innerWidth >= 1024) setView("split");
+  }, []);
   const [hover, setHover] = useState<number | null>(null);
   const [compare, setCompare] = useState<number[]>([]);
   const [showCompare, setShowCompare] = useState(false);
@@ -196,8 +199,8 @@ function Search() {
 
   return (
     <div>
-      <PageTitle kicker="Find parking" title={<>Spots near you in <span className="text-coral">Koramangala</span></>}>
-        <div className="inline-flex rounded-2xl bg-white p-1 ring-1 ring-road-dark/50">
+      <PageTitle kicker="Find parking · Koramangala" title="Spots near you">
+        <div className="hidden rounded-2xl bg-white p-1 ring-1 ring-line lg:inline-flex">
           {(
             [
               ["split", "Both", SlidersHorizontal],
@@ -205,7 +208,7 @@ function Search() {
               ["map", "Map", MapIcon],
             ] as const
           ).map(([id, label, Icon]) => (
-            <button key={id} onClick={() => setView(id)} className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold ${view === id ? "bg-ink text-white" : "text-ink/60"}`}>
+            <button key={id} onClick={() => setView(id)} className={`items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold ${id === "split" ? "hidden lg:flex" : "flex"} ${view === id ? "bg-ink text-white" : "text-ink/60"}`}>
               <Icon className="h-3.5 w-3.5" />
               {label}
             </button>
@@ -215,7 +218,7 @@ function Search() {
 
       <VehicleStrip />
 
-      <div className="mb-5 flex flex-wrap items-center gap-2">
+      <div className="no-scrollbar -mx-4 mb-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
         <Chip active={fitOnly} onClick={() => setFitOnly(!fitOnly)} color="mint">
           ✅ Fits my {vType ?? "vehicle"}
         </Chip>
@@ -228,17 +231,17 @@ function Search() {
         <Chip active={minRating >= 4} onClick={() => setMinRating(minRating >= 4 ? 0 : 4)} color="lavender">
           <Star className="h-3.5 w-3.5" /> 4★+
         </Chip>
-        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold ring-1 ring-road-dark/60">
+        <div className="flex shrink-0 items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold ring-1 ring-line">
           Max {inr(maxPrice)}/hr
           <input type="range" min={10} max={100} step={5} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-24 accent-coral" />
         </div>
-        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="rounded-full bg-white px-3 py-2 text-xs font-bold ring-1 ring-road-dark/60">
+        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="shrink-0 rounded-full bg-white px-3 py-2 text-xs font-bold ring-1 ring-line">
           <option value="distance">Nearest first</option>
           <option value="price">Cheapest first</option>
           <option value="rating">Top rated</option>
         </select>
         {hidden > 0 && (
-          <button onClick={clear} className="text-xs font-bold text-coral underline-offset-2 hover:underline">
+          <button onClick={clear} className="shrink-0 whitespace-nowrap text-xs font-bold text-brand underline-offset-2 hover:underline">
             {hidden} hidden by filters · clear
           </button>
         )}
@@ -263,7 +266,7 @@ function Search() {
           </div>
         )}
         {view !== "list" && (
-          <div className={`overflow-hidden rounded-[2rem] shadow-soft ring-4 ring-white ${view === "map" ? "h-[70vh]" : "h-[420px] lg:sticky lg:top-28 lg:h-[calc(100vh-9rem)]"}`}>
+          <div className={`overflow-hidden rounded-[2rem] shadow-soft ring-4 ring-white ${view === "map" ? "h-[calc(100dvh-19rem)] min-h-[360px] lg:h-[70vh]" : "h-[420px] lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]"}`}>
             <Map
               pins={list.map((s) => ({ id: s.id, lat: s.lat, lng: s.lng, label: inr(s.price), tone: vType && !fits(vType, s.size as never) ? "grey" : s.surge > 1 ? "coral" : "mint" }))}
               activeId={hover}
@@ -274,10 +277,18 @@ function Search() {
         )}
       </div>
 
+      <motion.button
+        whileTap={{ scale: 0.94 }}
+        onClick={() => setView(view === "map" ? "list" : "map")}
+        className={`fixed left-1/2 z-[660] flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-extrabold text-white shadow-pop lg:hidden ${compare.length ? "bottom-[calc(9.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]"}`}
+      >
+        {view === "map" ? <List className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}
+        {view === "map" ? "List" : "Map"}
+      </motion.button>
       <AnimatePresence>
         {compare.length > 0 && (
-          <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className="fixed bottom-4 left-1/2 z-[650] flex -translate-x-1/2 items-center gap-3 rounded-full bg-ink py-2 pl-4 pr-2 text-white shadow-pop">
-            <Scale className="h-4 w-4 text-lavender" />
+          <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-[660] flex -translate-x-1/2 lg:bottom-6 items-center gap-3 rounded-full bg-ink py-2 pl-4 pr-2 text-white shadow-pop">
+            <Scale className="h-4 w-4 text-white/70" />
             <div className="flex -space-x-2">
               {compare.map((id) => {
                 const s = data?.find((x) => x.id === id);

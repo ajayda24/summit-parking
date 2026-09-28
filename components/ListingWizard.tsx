@@ -75,7 +75,7 @@ export function ListingWizard({ initial, spotId, status, rejectReason }: { initi
       const body = { ...f, documents: f.documents.length ? f.documents : undefined };
       await api(spotId ? `spots/${spotId}` : "spots", body);
       await refresh();
-      confetti({ particleCount: 120, spread: 70, origin: { y: 0.7 }, colors: ["#D9D2FF", "#BDEBD6", "#FFD6BF", "#FF7A6B"] });
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.7 }, colors: ["#4263D6", "#8FA3E8", "#C9D4F4", "#E8F5EE"] });
       toast(spotId ? (status === "rejected" || f.documents.length ? "Resubmitted for verification" : "Listing updated") : "Submitted! We'll verify your documents shortly.");
       router.push("/owner/listings");
     } catch (err) {
@@ -278,7 +278,7 @@ export function ListingWizard({ initial, spotId, status, rejectReason }: { initi
                   ).map(([kind, title, hint, Icon, sample]) => {
                     const doc = f.documents.find((d) => d.kind === kind);
                     return (
-                      <div key={kind} className={`rounded-3xl p-4 ring-2 ${doc ? "bg-mint/40 ring-mint-deep/40" : "bg-cream ring-transparent"}`}>
+                      <div key={kind} className={`rounded-3xl p-4 ring-2 ${doc ? "bg-ok-soft ring-ok/30" : "bg-cream ring-transparent"}`}>
                         <div className="flex items-start gap-3">
                           <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white">
                             {doc ? <BadgeCheck className="h-5 w-5 text-mint-deep" /> : <Icon className="h-5 w-5" />}
@@ -342,9 +342,9 @@ export function ListingWizard({ initial, spotId, status, rejectReason }: { initi
               <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] font-bold">
                 <span className="rounded-full bg-road px-2 py-0.5">Size {f.size}</span>
                 <span className="rounded-full bg-road px-2 py-0.5 capitalize">{f.road_width} road</span>
-                {f.covered && <span className="rounded-full bg-sky px-2 py-0.5">Covered</span>}
-                {f.amenities.map((a) => <span key={a} className="rounded-full bg-mint px-2 py-0.5">{AMENITY_LABEL[a]}</span>)}
-                <span className="rounded-full bg-lavender px-2 py-0.5">{f.mode === "request" ? "On request" : "Instant"}</span>
+                {f.covered && <span className="rounded-full bg-road px-2 py-0.5">Covered</span>}
+                {f.amenities.map((a) => <span key={a} className="rounded-full bg-road px-2 py-0.5">{AMENITY_LABEL[a]}</span>)}
+                <span className="rounded-full bg-brand-soft px-2 py-0.5 text-brand">{f.mode === "request" ? "On request" : "Instant"}</span>
               </div>
               <div className="mt-3 text-xs text-muted">
                 {f.open_from}:00–{f.open_to === 24 ? "24:00" : `${f.open_to}:00`} · {f.open_days.length === 7 ? "every day" : f.open_days.map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d]).join(", ")}

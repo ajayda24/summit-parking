@@ -31,7 +31,7 @@ function ParkingCelebration() {
     <motion.div initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ delay: 2.4, duration: 0.6 }} className="pointer-events-none fixed inset-0 z-[950] grid place-items-center bg-cream/80 backdrop-blur-sm">
       <div className="relative w-80">
         <div className="road-strip h-20 rounded-3xl" />
-        <div className="absolute right-6 top-[-60px] h-24 w-24 rounded-xl border-4 border-dashed border-mint-deep bg-mint/60" />
+        <div className="absolute right-6 top-[-60px] h-24 w-24 rounded-xl border-4 border-dashed border-brand bg-brand-soft" />
         <motion.div initial={{ x: -120 }} animate={{ x: 190, y: -55 }} transition={{ duration: 1.4, ease: "easeInOut" }} className="absolute left-0 top-4 w-24">
           <CarSide />
         </motion.div>
@@ -52,19 +52,19 @@ function TimerRing({ b, now }: { b: BookingFull; now: number }) {
   const C = 2 * Math.PI * R;
   const ot = overtime(b.spot.price, b.end_at, now);
   const inGrace = over > 0 && over <= GRACE_MIN * MIN;
-  const color = over > GRACE_MIN * MIN ? "#FF7A6B" : over > 0 ? "#C99A12" : "#3FAE83";
+  const color = over > GRACE_MIN * MIN ? "#C4473B" : over > 0 ? "#946C00" : "#4263D6";
   return (
     <div className="flex flex-col items-center">
-      <div className={`relative h-56 w-56 rounded-full ${over > 0 ? "pulse-ring" : ""}`}>
+      <div className={`relative h-52 w-52 rounded-full sm:h-56 sm:w-56 ${over > 0 ? "pulse-ring" : ""}`}>
         <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90">
-          <circle cx="100" cy="100" r={R} stroke="#E6E8EF" strokeWidth="14" fill="none" />
+          <circle cx="100" cy="100" r={R} stroke="#EEEEE9" strokeWidth="14" fill="none" />
           <motion.circle cx="100" cy="100" r={R} stroke={color} strokeWidth="14" fill="none" strokeLinecap="round" strokeDasharray={C} animate={{ strokeDashoffset: C * (1 - pct) }} transition={{ duration: 0.8 }} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <div className="text-[11px] font-extrabold uppercase tracking-widest" style={{ color }}>
             {over > 0 ? (inGrace ? "Grace period" : "Overtime") : "Time left"}
           </div>
-          <div className="text-4xl font-black tabular-nums">{duration(over > 0 ? over : b.end_at - now)}</div>
+          <div className="text-3xl font-black tabular-nums sm:text-4xl">{duration(over > 0 ? over : b.end_at - now)}</div>
           {over > GRACE_MIN * MIN ? (
             <div className="mt-1 text-sm font-extrabold text-coral-deep">+{inr(ot.amount)} so far</div>
           ) : (
@@ -73,7 +73,7 @@ function TimerRing({ b, now }: { b: BookingFull; now: number }) {
         </div>
       </div>
       {over > 0 && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 max-w-xs rounded-2xl bg-rose px-4 py-2 text-center text-xs font-bold text-coral-deep">
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 max-w-xs rounded-2xl bg-bad-soft px-4 py-2 text-center text-xs font-bold text-bad">
           {inGrace
             ? `You have ${GRACE_MIN} min of grace. After that, overtime is charged at 1.5× per 15 min.`
             : `Overtime: ${ot.minutes} min → ${ot.blocks} × 15-min blocks at 1.5× rate. It will be auto-paid from your wallet on check-out.`}
@@ -101,7 +101,7 @@ function Pass() {
   useEffect(() => {
     if (search.get("new")) {
       setCelebrate(true);
-      setTimeout(() => confetti({ particleCount: 140, spread: 80, origin: { y: 0.6 }, colors: ["#FF7A6B", "#BDEBD6", "#D9D2FF", "#FFF1B8", "#CDE7FF"] }), 1300);
+      setTimeout(() => confetti({ particleCount: 140, spread: 80, origin: { y: 0.6 }, colors: ["#4263D6", "#8FA3E8", "#C9D4F4", "#E8F5EE"] }), 1300);
       setTimeout(() => setCelebrate(false), 3000);
       window.history.replaceState(null, "", `/driver/pass/${id}`);
     }
@@ -125,7 +125,7 @@ function Pass() {
 
   const canCheckIn = b.status === "confirmed" && now >= b.start_at - 15 * MIN;
   const liveOt = b.status === "live" ? overtime(b.spot.price, b.end_at, now) : null;
-  const tone = { requested: "bg-butter", confirmed: "bg-sky", live: b.overstay ? "bg-rose" : "bg-mint", completed: "bg-lavender", cancelled: "bg-road", declined: "bg-road", no_show: "bg-peach" }[b.status] ?? "bg-sky";
+  const tone = b.status === "live" && b.overstay ? "bg-bad-soft" : ["requested", "confirmed", "live"].includes(b.status) ? "bg-brand-soft" : "bg-road";
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -133,10 +133,10 @@ function Pass() {
       <Link href="/driver/bookings" className="mb-4 inline-flex items-center gap-1 text-sm font-bold text-ink/60 hover:text-ink">
         <ArrowLeft className="h-4 w-4" /> My bookings
       </Link>
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_1.1fr] lg:gap-6">
         {/* Ticket */}
-        <motion.div initial={{ rotate: -2, y: 30, opacity: 0 }} animate={{ rotate: 0, y: 0, opacity: 1 }} transition={{ type: "spring", damping: 16 }} className="overflow-hidden rounded-[2rem] bg-white shadow-pop">
-          <div className={`${tone} p-6`}>
+        <motion.div initial={{ rotate: -2, y: 30, opacity: 0 }} animate={{ rotate: 0, y: 0, opacity: 1 }} transition={{ type: "spring", damping: 16 }} className="order-2 overflow-hidden rounded-[1.75rem] bg-white shadow-soft lg:order-none">
+          <div className={`${tone} p-5 sm:p-6`}>
             <div className="flex items-center justify-between">
               <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink/60">Parking pass</div>
               <StatusBadge status={b.status === "live" && b.overstay ? "overstay" : b.status} />
@@ -167,7 +167,7 @@ function Pass() {
           </div>
           <div className="mt-5 flex flex-col items-center border-t-2 border-dashed border-road px-6 py-6">
             <div className={`rounded-3xl bg-cream p-4 ${["cancelled", "declined", "no_show"].includes(b.status) ? "opacity-30 grayscale" : ""}`}>
-              <QRCodeSVG value={`SUMMIT:${b.code}`} size={150} bgColor="transparent" fgColor="#2B2D42" />
+              <QRCodeSVG value={`SUMMIT:${b.code}`} size={150} bgColor="transparent" fgColor="#1F2330" />
             </div>
             <div className="mt-3 font-mono text-xl font-black tracking-[0.25em]">{b.code}</div>
             <div className="mt-1 text-xs text-muted">Show this at the spot, or tell the owner the code</div>
@@ -175,12 +175,12 @@ function Pass() {
         </motion.div>
 
         {/* State + actions */}
-        <div className="space-y-4">
-          <div className="rounded-[2rem] bg-white p-6 shadow-soft">
+        <div className="order-1 space-y-4 lg:order-none">
+          <div className="rounded-[1.75rem] bg-white p-5 shadow-soft sm:p-6">
             <AnimatePresence mode="wait">
               {b.status === "requested" && (
                 <motion.div key="req" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-                  <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-butter">
+                  <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-warn-soft text-warn">
                     <Timer className="h-8 w-8" />
                   </motion.div>
                   <h2 className="mt-3 text-xl font-extrabold">Waiting for {b.owner.name.split(" ")[0]} to accept</h2>
@@ -224,31 +224,31 @@ function Pass() {
               )}
             </AnimatePresence>
 
-            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+            <div className="mt-6 grid grid-cols-2 gap-2">
               {b.status === "confirmed" && (
-                <Button size="lg" className="sm:col-span-2" disabled={!canCheckIn} loading={busy} onClick={() => act("checkin", {}, "Checked in. Enjoy your parking!")}>
+                <Button size="lg" className="col-span-2" disabled={!canCheckIn} loading={busy} onClick={() => act("checkin", {}, "Checked in. Enjoy your parking!")}>
                   <LogIn className="h-4 w-4" /> Check in
                 </Button>
               )}
               {b.status === "live" && (
-                <Button size="lg" className="sm:col-span-2" variant={b.overstay ? "primary" : "dark"} loading={busy} onClick={async () => { const r = await act("checkout", {}, liveOt && liveOt.amount > 0 ? `Checked out · ${inr(liveOt.amount)} overtime auto-paid` : "Checked out. See you next time!"); if (r) setReceiptOpen(true); }}>
-                  <LogOut className="h-4 w-4" /> Check out{liveOt && liveOt.amount > 0 ? ` & pay ${inr(liveOt.amount)} overtime` : ""}
+                <Button size="lg" className="col-span-2" variant={b.overstay ? "primary" : "dark"} loading={busy} onClick={async () => { const r = await act("checkout", {}, liveOt && liveOt.amount > 0 ? `Checked out · ${inr(liveOt.amount)} overtime auto-paid` : "Checked out. See you next time!"); if (r) setReceiptOpen(true); }}>
+                  <LogOut className="h-4 w-4" /> Check out{liveOt && liveOt.amount > 0 ? ` · pay ${inr(liveOt.amount)}` : ""}
                 </Button>
               )}
               {(b.status === "live" || b.status === "confirmed") && (
                 <>
                   <Button variant="soft" onClick={() => setExtendMin(30)} disabled={!b.next_free}>
-                    <CalendarPlus className="h-4 w-4" /> Extend 30 min
+                    <CalendarPlus className="h-4 w-4" /> +30 min
                   </Button>
                   <Button variant="soft" onClick={() => setExtendMin(60)} disabled={!b.next_free}>
-                    <CalendarPlus className="h-4 w-4" /> Extend 1 hr
+                    <CalendarPlus className="h-4 w-4" /> +1 hr
                   </Button>
-                  {!b.next_free && <div className="text-xs font-bold text-coral-deep sm:col-span-2">Can't extend: the next booking starts right after yours.</div>}
+                  {!b.next_free && <div className="col-span-2 text-xs font-bold text-coral-deep">Can't extend: the next booking starts right after yours.</div>}
                 </>
               )}
               {(b.status === "requested" || b.status === "confirmed") && (
                 <Button variant="danger" onClick={() => setCancelOpen(true)}>
-                  <XCircle className="h-4 w-4" /> Cancel booking
+                  <XCircle className="h-4 w-4" /> Cancel
                 </Button>
               )}
               <a href={`https://www.google.com/maps/dir/?api=1&destination=${b.spot.lat},${b.spot.lng}`} target="_blank" rel="noreferrer" className="contents">
@@ -258,12 +258,12 @@ function Pass() {
               </a>
               {b.status === "completed" && !b.driver_reviewed && (
                 <Button onClick={() => setReviewOpen(true)}>
-                  <Star className="h-4 w-4" /> Rate this spot
+                  <Star className="h-4 w-4" /> Rate spot
                 </Button>
               )}
               {["completed", "live", "no_show", "cancelled"].includes(b.status) && !b.dispute && (
                 <Button variant="soft" onClick={() => setDisputeOpen(true)}>
-                  <Flag className="h-4 w-4" /> Report a problem
+                  <Flag className="h-4 w-4" /> Report issue
                 </Button>
               )}
               <Button variant="soft" onClick={() => setReceiptOpen(true)}>
@@ -273,7 +273,7 @@ function Pass() {
           </div>
 
           {b.dispute && (
-            <div className="flex gap-3 rounded-[2rem] bg-butter p-5">
+            <div className="flex gap-3 rounded-[1.75rem] bg-warn-soft p-5 text-warn">
               <AlertOctagon className="h-5 w-5 shrink-0" />
               <div className="text-sm">
                 <div className="font-extrabold">Dispute {b.dispute.status}</div>
