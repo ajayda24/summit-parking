@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/*
+ * Restrained light palette: warm off-white + white surfaces, ONE accent (calm parking-sign blue),
+ * and soft status tints used only when they carry meaning (success / warning / danger).
+ * Legacy pastel names are aliased onto these so every screen draws from the same few colours.
+ */
+@theme {
+  --color-cream: #f7f7f4; /* page background */
+  --color-paper: #ffffff;
+  --color-line: #ebebe6;
+  --color-road: #eeeee9;
+  --color-road-dark: #d9d9d2;
+  --color-ink: #1f2330;
+  --color-muted: #6c707e;
+
+  --color-brand: #4263d6; /* the one accent */
+  --color-brand-deep: #3450b8;
+  --color-brand-soft: #eef2fd;
+
+  --color-ok: #2f8a5f;
+  --color-ok-soft: #e8f5ee;
+  --color-warn: #946c00;
+  --color-warn-soft: #fcf4dc;
+  --color-bad: #c4473b;
+  --color-bad-soft: #fcecea;
+
+  /* aliases */
+  --color-sky: var(--color-brand-soft);
+  --color-sky-deep: var(--color-brand);
+  --color-lavender: var(--color-brand-soft);
+  --color-lavender-deep: var(--color-brand);
+  --color-coral: var(--color-brand);
+  --color-coral-deep: var(--color-bad);
+  --color-mint: var(--color-ok-soft);
+  --color-mint-deep: var(--color-ok);
+  --color-butter: var(--color-warn-soft);
+  --color-butter-deep: var(--color-warn);
+  --color-peach: #f2f2ee;
+  --color-peach-deep: var(--color-warn);
+  --color-rose: var(--color-bad-soft);
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --shadow-soft: 0 1px 2px rgb(31 35 48 / 0.04), 0 8px 24px -12px rgb(31 35 48 / 0.12);
+  --shadow-pop: 0 18px 40px -16px rgb(31 35 48 / 0.25);
+}
+
+html,
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* animated lane dashes */
+@keyframes lane {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+.lane-dash {
+  stroke-dasharray: 16 16;
+  animation: lane 1.2s linear infinite;
+}
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.floaty {
+  animation: floaty 4s ease-in-out infinite;
+}
+@keyframes drift {
+  from {
+    transform: translateX(-10%);
+  }
+  to {
+    transform: translateX(110%);
+  }
+}
+.cloud {
+  animation: drift 40s linear infinite;
+}
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(196 71 59 / 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgb(196 71 59 / 0);
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+.shake {
+  animation: shake 0.5s;
+}
+
+/* bay stripes used on parking-bay cards */
+.bay {
+  background-image: linear-gradient(90deg, rgb(255 255 255 / 0.9) 3px, transparent 3px),
+    linear-gradient(-90deg, rgb(255 255 255 / 0.9) 3px, transparent 3px);
+  background-position: left, right;
+  background-size: 3px 100%;
+  background-repeat: no-repeat;
+}
+
+.road-strip {
+  background:
+    repeating-linear-gradient(90deg, #fff 0 22px, transparent 22px 44px) center / 100% 3px no-repeat,
+    var(--color-road);
+}
+
+.perforation {
+  background-image: radial-gradient(circle, var(--color-cream) 6px, transparent 6.5px);
+  background-size: 22px 14px;
+  background-repeat: repeat-x;
+}
+
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: #f3f1ec;
+}
+.price-pin {
+  background: transparent;
+  border: none;
+}
+
+input,
+select,
+textarea {
+  outline: none;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d9d6e8;
+  border-radius: 99px;
+}
+
+/* iOS zooms into inputs under 16px — keep them at 16px on phones */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Let grid/flex children shrink on narrow phones instead of overflowing the page */
+@layer base {
+  .grid > *,
+  main {
+    min-width: 0;
+  }
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
